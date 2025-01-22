@@ -20,14 +20,81 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Un stat pe spate'),
-        backgroundColor: Colors.red[700],
-        centerTitle: true,
-      ),
-      body: Container(
-        color: Colors.blueAccent,
-        child: Home(pageIndex: _page),
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar.large(
+            backgroundColor: Colors.red,
+            leading: PopupMenuButton<int>(
+              onSelected: (value) {},
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 1,
+                  child: Text('Item 1'),
+                ),
+                PopupMenuItem(
+                  value: 2,
+                  child: Text('Item 2'),
+                ),
+                PopupMenuItem(
+                  value: 3,
+                  child: Text('Item 3'),
+                ),
+              ],
+              icon: Icon(Icons.menu),
+            ),
+            title: Text('Large App Bar'),
+            actions: [
+              PopupMenuButton<int>(
+                color: Colors.black, // Different background color
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                onSelected: (value) {
+                  // Handle menu item selection
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 1,
+                    child: Row(
+                      children: [
+                        Icon(Icons.settings, color: Colors.white),
+                        SizedBox(width: 10),
+                        Text('Settings', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 2,
+                    child: Row(
+                      children: [
+                        Icon(Icons.help, color: Colors.white),
+                        SizedBox(width: 10),
+                        Text('Help', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 3,
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout, color: Colors.white),
+                        SizedBox(width: 10),
+                        Text('Logout', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ],
+                icon: Icon(Icons.more_vert),
+              ),
+            ],
+          ),
+          SliverFillRemaining(
+            child: Container(
+              color: Colors.blueAccent,
+              child: Home(pageIndex: _page),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: CurvedNavigationBar(
         key: _bottomNavigationKey,
@@ -70,11 +137,11 @@ class Home extends StatelessWidget {
             style: TextStyle(fontSize: 24, color: Colors.white),
           ),
           if (pageIndex == 0)
-            CounterWidget()
+            LikeButtonWidget()
           else if (pageIndex == 1)
             TextFieldWidget()
           else
-            LikeButtonWidget(),
+            CounterWidget(),
         ],
       ),
     );
@@ -82,6 +149,8 @@ class Home extends StatelessWidget {
 }
 
 class CounterWidget extends StatefulWidget {
+  const CounterWidget({super.key});
+
   @override
   _CounterWidgetState createState() => _CounterWidgetState();
 }
@@ -102,12 +171,12 @@ class _CounterWidgetState extends State<CounterWidget> {
       children: [
         Text(
           'Număr de apăsări: $_counter',
-          style: TextStyle(fontSize: 20, color: Colors.white),
+          style: const TextStyle(fontSize: 20, color: Colors.white),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         ElevatedButton(
           onPressed: _incrementCounter,
-          child: Text('Apasă-mă'),
+          child: const Text('Apasă-mă'),
         ),
       ],
     );
@@ -115,6 +184,8 @@ class _CounterWidgetState extends State<CounterWidget> {
 }
 
 class TextFieldWidget extends StatefulWidget {
+  const TextFieldWidget({super.key});
+
   @override
   _TextFieldWidgetState createState() => _TextFieldWidgetState();
 }
@@ -137,7 +208,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: TextField(
             onChanged: _updateText,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               border: OutlineInputBorder(),
               labelText: 'Introdu text',
               filled: true,
@@ -145,10 +216,10 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
             ),
           ),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         Text(
           'Text introdus: $_inputText',
-          style: TextStyle(fontSize: 16, color: Colors.white),
+          style: const TextStyle(fontSize: 16, color: Colors.white),
         ),
       ],
     );
@@ -156,9 +227,11 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
 }
 
 class LikeButtonWidget extends StatelessWidget {
+  const LikeButtonWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: LikeButton(
         size: 80,
       ),

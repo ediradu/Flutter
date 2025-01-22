@@ -1,5 +1,6 @@
 import 'package:calculator/button_values.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
@@ -9,9 +10,9 @@ class CalculatorScreen extends StatefulWidget {
 }
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
-  String number1 = ""; // . 0-9
-  String operand = ""; // + - * /
-  String number2 = ""; // . 0-9
+  String number1 = "";
+  String operand = "";
+  String number2 = "";
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +22,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         bottom: false,
         child: Column(
           children: [
-            // output
             Expanded(
               child: SingleChildScrollView(
                 reverse: true,
@@ -41,8 +41,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 ),
               ),
             ),
-
-            // buttons
             Wrap(
               children: Btn.buttonValues
                   .map(
@@ -90,7 +88,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
-  // ########
   void onBtnTap(String value) {
     if (value == Btn.del) {
       delete();
@@ -115,29 +112,42 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     appendValue(value);
   }
 
-  // ##############
-  // calculates the result
   void calculate() {
     if (number1.isEmpty) return;
     if (operand.isEmpty) return;
-    if (number2.isEmpty) return;
+    if (number2.isEmpty &&
+        (operand != Btn.sqrt &&
+            operand != Btn.inv &&
+            operand != Btn.log &&
+            operand != Btn.pow)) return;
 
     final double num1 = double.parse(number1);
-    final double num2 = double.parse(number2);
 
-    var result = 0.0;
+    num result = 0.0;
     switch (operand) {
       case Btn.add:
-        result = num1 + num2;
+        result = num1 + double.parse(number2);
         break;
       case Btn.subtract:
-        result = num1 - num2;
+        result = num1 - double.parse(number2);
         break;
       case Btn.multiply:
-        result = num1 * num2;
+        result = num1 * double.parse(number2);
         break;
       case Btn.divide:
-        result = num1 / num2;
+        result = num1 / double.parse(number2);
+        break;
+      case Btn.log:
+        result = log(num1);
+        break;
+      case Btn.pow:
+        result = pow(num1, 2);
+        break;
+      case Btn.sqrt:
+        result = sqrt(num1);
+        break;
+      case Btn.inv:
+        result = 1 / num1;
         break;
       default:
     }
@@ -154,17 +164,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     });
   }
 
-  // ##############
-  // converts output to %
   void convertToPercentage() {
-    // ex: 434+324
     if (number1.isNotEmpty && operand.isNotEmpty && number2.isNotEmpty) {
-      // calculate before conversion
       calculate();
     }
 
     if (operand.isNotEmpty) {
-      // cannot be converted
       return;
     }
 
@@ -176,8 +181,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     });
   }
 
-  // ##############
-  // clears all output
   void clearAll() {
     setState(() {
       number1 = "";
@@ -186,11 +189,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     });
   }
 
-  // ##############
-  // delete one from the end
   void delete() {
     if (number2.isNotEmpty) {
-      // 12323 => 1232
       number2 = number2.substring(0, number2.length - 1);
     } else if (operand.isNotEmpty) {
       operand = "";
@@ -201,46 +201,48 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     setState(() {});
   }
 
-  // #############
-  // appends value to the end
   void appendValue(String value) {
-    // number1 opernad number2
-    // 234       +      5343
+    if (value == Btn.dot) {
+      if (operand.isEmpty && !number1.contains(Btn.dot)) {
+        number1 += value;
+      } else if (!number2.contains(Btn.dot)) {
+        number2 += value;
+      }
+      setState(() {});
+      return;
+    }
 
-    // if is operand and not "."
+    if (int.tryParse(value) != null) {
+      if (operand.isEmpty) {
+        if (number1.length < 10) {
+          number1 += value;
+        }
+      } else {
+        if (number2.length < 10) {
+          number2 += value;
+        }
+      }
+      setState(() {});
+      return;
+    }
+
     if (value != Btn.dot && int.tryParse(value) == null) {
-      // operand pressed
-      if (operand.isNotEmpty && number2.isNotEmpty) {
-        // TODO calculate the equation before assigning new operand
-        calculate();
-      }
-      operand = value;
-    }
-    // assign value to number1 variable
-    else if (number1.isEmpty || operand.isEmpty) {
-      // check if value is "." | ex: number1 = "1.2"
-      if (value == Btn.dot && number1.contains(Btn.dot)) return;
-      if (value == Btn.dot && (number1.isEmpty || number1 == Btn.n0)) {
-        // ex: number1 = "" | "0"
-        value = "0.";
-      }
-      number1 += value;
-    }
-    // assign value to number2 variable
-    else if (number2.isEmpty || operand.isNotEmpty) {
-      // check if value is "." | ex: number1 = "1.2"
-      if (value == Btn.dot && number2.contains(Btn.dot)) return;
-      if (value == Btn.dot && (number2.isEmpty || number2 == Btn.n0)) {
-        // number1 = "" | "0"
-        value = "0.";
-      }
-      number2 += value;
-    }
+      if (number1.isEmpty) return;
 
-    setState(() {});
+      if ([Btn.log, Btn.pow, Btn.sqrt, Btn.inv].contains(value)) {
+        operand = value;
+        calculate();
+      } else {
+        if (operand.isNotEmpty && number2.isNotEmpty) {
+          calculate();
+        }
+        operand = value;
+      }
+
+      setState(() {});
+    }
   }
 
-  // ########
   Color getBtnColor(value) {
     return [Btn.del, Btn.clr].contains(value)
         ? Colors.blueGrey
@@ -251,6 +253,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             Btn.subtract,
             Btn.divide,
             Btn.calculate,
+            Btn.log,
+            Btn.pow,
+            Btn.sqrt,
+            Btn.inv,
           ].contains(value)
             ? Colors.orange
             : Colors.black87;
